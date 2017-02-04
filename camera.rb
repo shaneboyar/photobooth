@@ -1,0 +1,1 @@
+system('raspistill -v -vf -o camera_image.jpg')
