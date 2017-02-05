@@ -1,7 +1,12 @@
 require "rubygame"
 
-# Open a window with a drawable area measuring 640x480 pixels 
-@screen = Rubygame::Screen.open [ 640, 480]
+include Rubygame
+
+# Open a window with a drawable area measuring 640x480 pixels
+@screen = Rubygame::Screen.open [640, 480]
+
+@background = Surface.load "intro.png"
+@background.blit @screen, [ 0, 0]
 
 # Set the title of the window
 @screen.title = "Hello Rubygame World!"
