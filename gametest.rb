@@ -1,24 +1,29 @@
-require "rubygame"
+require 'gosu'
 
-# Open a window with a drawable area measuring 640x480 pixels 
-@screen = Rubygame::Screen.open [ 640, 480]
+class GameWindow < Gosu::Window
+  def initialize
+    super 800, 480, fullscreen: false, update_interval: 2000
+    self.caption = "Photo Booth"
+    @count = 0
+    @background_image = Gosu::Image.new("finn.gif", :tileable => true)
+  end
 
-# Set the title of the window
-@screen.title = "Hello Rubygame World!"
+  def update
+    close if @count == 5
+    @background_image = Gosu::Image.new("intro.png") if @count == 2
+    puts @count
+    @count = @count + 1
+  end
 
-# Create a queue to receive events+
-#  + events such as "the mouse has moved", "a key has been pressed" and so on
-@event_queue = Rubygame::EventQueue.new
+  def draw
+    @background_image.draw(0, 0, 0)
+  end
 
-# Use new style events so that this software will work with Rubygame 3.0
-@event_queue.enable_new_style_events
-
-# Wait for an event
-while event = @event_queue.wait
-
-  # Show the details of the event
-  p event
-
-  # Stop this program if the user closes the window
-  break if event.is_a? Rubygame::Events::QuitRequested
+  def button_down(id)
+    if id != Gosu::KbEscape
+      close
+    end
+  end
 end
+
+GameWindow.new.show
