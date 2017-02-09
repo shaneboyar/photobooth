@@ -63,9 +63,17 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   t1 = Thread.new{loading(true)}
   print "\nProcessing Gif"
   animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
-  animation.delay = 100
+  animation.delay = 25
   animation.write("animated.gif") # Creates a gif with a 100ms delay between frames and saves it to the timestampped folder
   t1.exit
+
+  t1 = Thread.new{loading(true)}
+  print "\nUploading Gif"
+  # Dir.chdir("./pictures/#{folder_timestamp}")
+  system("curl -F item['picture']=@animated.gif https://cryptic-reef-13179.herokuapp.com/items")
+  t1.exit
+
+  Dir.chdir("../../") # Moves into the folder created at the beginning
 
   puts "\nAll done!"
 end
