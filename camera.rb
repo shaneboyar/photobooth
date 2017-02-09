@@ -3,7 +3,6 @@ include Magick
 require 'pi_piper'
 include PiPiper
 require './timer'
-# require './button'
 
 white_led = PiPiper::Pin.new(:pin => 18, :direction => :out)
 timer = Timer.new
@@ -34,7 +33,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     timer.clear
     sleep 1
     white_led.on
-    system("raspistill -t 1 -w 1000 -h 1000 -vf -o pictures/#{folder_timestamp}/#{i}.jpg") # Takes picture in 1 second, scales to 1000x1000, flips vertically
+    system("raspistill -t 1 -w 1000 -h 1000 -vf -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
     white_led.off
     i = i + 1

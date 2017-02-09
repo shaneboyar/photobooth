@@ -1,5 +1,6 @@
 # require 'pi_piper'
 # include PiPiper
+
 class Timer
 
   def initialize
@@ -12,6 +13,54 @@ class Timer
       bc: PiPiper::Pin.new(:pin => 26, :direction => :out),
       br: PiPiper::Pin.new(:pin => 20, :direction => :out)
     }
+  end
+
+  def display_nine
+    @segments[:ul].on
+    @segments[:uc].on
+    @segments[:ur].on
+    @segments[:cross].on
+    @segments[:br].on
+  end
+
+  def display_eight
+    @segments[:ul].on
+    @segments[:uc].on
+    @segments[:ur].on
+    @segments[:cross].on
+    @segments[:br].on
+    @segments[:bc].on
+    @segments[:bl].on
+  end
+
+  def display_seven
+    @segments[:uc].on
+    @segments[:ur].on
+    @segments[:br].on
+  end
+
+  def display_six
+    @segments[:uc].on
+    @segments[:ul].on
+    @segments[:cross].on
+    @segments[:br].on
+    @segments[:bc].on
+    @segments[:bl].on
+  end
+
+  def display_five
+    @segments[:ul].on
+    @segments[:uc].on
+    @segments[:cross].on
+    @segments[:br].on
+    @segments[:bc].on
+  end
+
+  def display_four
+    @segments[:ul].on
+    @segments[:cross].on
+    @segments[:ur].on
+    @segments[:br].on
   end
 
   def display_three
@@ -35,6 +84,15 @@ class Timer
     @segments[:br].on
   end
 
+  def display_zero
+    @segments[:ul].on
+    @segments[:uc].on
+    @segments[:ur].on
+    @segments[:br].on
+    @segments[:bc].on
+    @segments[:bl].on
+  end
+
   def display_all
     @segments.each { |k,v| v.on }
   end
@@ -44,17 +102,35 @@ class Timer
   end
 
   def test
+    display_nine
+    sleep(0.25)
+    clear
+    display_eight
+    sleep(0.25)
+    clear
+    display_seven
+    sleep(0.25)
+    clear
+    display_six
+    sleep(0.25)
+    clear
+    display_five
+    sleep(0.25)
+    clear
+    display_four
+    sleep(0.25)
+    clear
     display_three
-    sleep(1)
+    sleep(0.25)
     clear
-    sleep(1)
     display_two
-    sleep(1)
+    sleep(0.25)
     clear
-    sleep(1)
     display_one
-    sleep(1)
+    sleep(0.25)
+    clear
+    display_zero
+    sleep(0.25)
     clear
   end
-
 end
