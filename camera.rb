@@ -7,6 +7,8 @@ require './timer'
 white_led = PiPiper::Pin.new(:pin => 18, :direction => :out)
 timer = Timer.new
 
+puts "Ready!"
+
 PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   puts "Creating folder"
   folder_timestamp = Time.now.to_i
@@ -46,8 +48,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     end
   end
 
-  t1 = Thread.new{loading(true)}
-  print "Overlaying Images"
+  puts "Overlaying Images"
   overlay = Magick::Image.read("overlay.png")[0] # Grabs transparent overlay image from project folder
   Dir.chdir("./pictures/#{folder_timestamp}") # Moves into the folder created at the beginning
   il = ImageList.new(*Dir["*.jpg"]) # Grabs all the pictures taken by the photobooth
@@ -58,23 +59,36 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     result.write("composite#{i}.jpg")
     i = i + 1
   end
-  t1.exit
 
-  t1 = Thread.new{loading(true)}
-  print "\nProcessing Gif"
+  puts "Processing Strip"
+  i = 0
+  il.each do |image|
+    result = image.border(0, 5, "white")
+    result.write("border#{i}.jpg")
+    i = i + 1
+  end
+  il = ImageList.new(*Dir["border*.jpg"])
+  result = il.append(true)
+  result.write("strip1.jpg")
+
+  puts "Processing Gif"
   animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
   animation.delay = 25
   animation.write("animated.gif") # Creates a gif with a 100ms delay between frames and saves it to the timestampped folder
-  t1.exit
 
-  t1 = Thread.new{loading(true)}
-  print "\nUploading Gif"
-  # Dir.chdir("./pictures/#{folder_timestamp}")
+  puts "Uploading Gif"
   system("curl -F item['picture']=@animated.gif https://cryptic-reef-13179.herokuapp.com/items")
-  t1.exit
 
-  Dir.chdir("../../") # Moves into the folder created at the beginning
+  puts "\nCleaning Up"
+  system("rm -f ./{1,2,3,4}.jpg")
+  system("rm -f ./composite*.jpg")
+  system("rm -f ./border*.jpg")
+  system("rm -f ./animated.gif")
+  system("rm -f ./strip.gif")
 
-  puts "\nAll done!"
+  Dir.chdir("../../") # Moves back into root folder
+
+  puts "All done!"
+  puts "Ready!"
 end
 PiPiper.wait
