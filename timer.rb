@@ -1,6 +1,3 @@
-# require 'pi_piper'
-# include PiPiper
-
 class Timer
 
   def initialize

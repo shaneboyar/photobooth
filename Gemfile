@@ -1,4 +1,5 @@
 # A sample Gemfile
 source "https://rubygems.org"
 
-# gem "rails"
+gem 'rmagick'
+gem 'pi_piper'
