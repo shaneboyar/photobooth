@@ -77,7 +77,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   animation.write("animated.gif") # Creates a gif with a 100ms delay between frames and saves it to the timestampped folder
 
   puts "Uploading Gif"
-  system("curl -F item['picture']=@animated.gif https://cryptic-reef-13179.herokuapp.com/items")
+  system("curl -F item['picture']=@animated.gif https://calm-journey-36588.herokuapp.com/items")
 
   puts "\nCleaning Up"
   system("rm -f ./{1,2,3,4}.jpg")
