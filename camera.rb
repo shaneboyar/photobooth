@@ -1,3 +1,4 @@
+require 'rest-client'
 require 'rmagick'
 include Magick
 require 'pi_piper'
@@ -35,7 +36,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     timer.clear
     sleep 1
     white_led.on
-    system("raspistill -t 1 -w 1000 -h 1000 -vf -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
+    system("raspistill -t 1 -w 1000 -h 1000 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
     white_led.off
     i = i + 1
@@ -69,22 +70,39 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   end
   il = ImageList.new(*Dir["border*.jpg"])
   result = il.append(true)
-  result.write("strip1.jpg")
+  result.write("strip.jpg")
 
-  puts "Processing Gif"
-  animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
-  animation.delay = 25
-  animation.write("animated.gif") # Creates a gif with a 100ms delay between frames and saves it to the timestampped folder
+  def process_gif(delay = 50, output_file_name = "animated.gif")
+    puts "Processing Gif"
+    animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
+    animation.delay = delay
+    animation.write("animated.gif")
+  end
 
+  process_gif
+
+  # animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
+  # animation.delay = 25
+  # animation.write("animated.gif") # Creates a gif with a 100ms delay between frames and saves it to the timestampped folder
   puts "Uploading Gif"
-  system("curl -F item['picture']=@animated.gif https://calm-journey-36588.herokuapp.com/items")
 
+  RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new('animated.gif'))
   puts "\nCleaning Up"
-  system("rm -f ./{1,2,3,4}.jpg")
-  system("rm -f ./composite*.jpg")
-  system("rm -f ./border*.jpg")
-  system("rm -f ./animated.gif")
-  system("rm -f ./strip.gif")
+  # system("rm -f ./{1,2,3,4}.jpg")
+  # system("rm -f ./composite*.jpg")
+  # system("rm -f ./border*.jpg")
+  # system("rm -f ./animated.gif")
+  # system("rm -f ./strip.gif")
+  File.delete('composite0.jpg')
+  File.delete('composite1.jpg')
+  File.delete('composite2.jpg')
+  File.delete('composite3.jpg')
+  File.delete('border0.jpg')
+  File.delete('border1.jpg')
+  File.delete('border2.jpg')
+  File.delete('border3.jpg')
+  File.delete('animated.gif')
+  File.delete('strip.jpg')
 
   Dir.chdir("../../") # Moves back into root folder
 
