@@ -83,18 +83,10 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
 
   process_gif
 
-  # animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
-  # animation.delay = 25
-  # animation.write("animated.gif") # Creates a gif with a 100ms delay between frames and saves it to the timestampped folder
   puts "Uploading Gif"
 
   RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new('animated.gif'))
   puts "\nCleaning Up"
-  # system("rm -f ./{1,2,3,4}.jpg")
-  # system("rm -f ./composite*.jpg")
-  # system("rm -f ./border*.jpg")
-  # system("rm -f ./animated.gif")
-  # system("rm -f ./strip.gif")
   File.delete('composite0.jpg')
   File.delete('composite1.jpg')
   File.delete('composite2.jpg')
@@ -104,7 +96,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   File.delete('border2.jpg')
   File.delete('border3.jpg')
   File.delete('animated.gif')
-  #File.delete('strip.jpg')
+  #File.delete('strip.jpg') This is just being commented for now while I work on strip design.
 
   Dir.chdir("../../") # Moves back into root folder
 
