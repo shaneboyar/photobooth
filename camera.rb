@@ -11,7 +11,7 @@ timer = Timer.new
 puts "Ready!"
 
 PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
-  footer = ImageList.new('footer.jpg')
+  footer = ImageList.new(*Dir["*.jpg"])
   puts "Creating folder"
   folder_timestamp = Time.now.to_i
   system("mkdir pictures/#{folder_timestamp}") # Creates desitnation folder for photobooth sessions
