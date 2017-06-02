@@ -70,7 +70,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     i = i + 1
   end
   il = ImageList.new(*Dir["border*.jpg"])
-  il << footer
+  il += footer
   result = il.append(true)
   result.write("strip.jpg")
 
