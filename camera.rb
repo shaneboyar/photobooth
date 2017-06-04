@@ -17,8 +17,8 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   system("mkdir pictures/#{folder_timestamp}") # Creates desitnation folder for photobooth sessions
 
   # Takes 4 pictures
-  # i = 1
-  4.times do |count|
+  i = 1
+  4.times do
     puts "Taking picture"
     sleep 1
     timer.display_three
@@ -37,10 +37,10 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     timer.clear
     sleep 1
     white_led.on
-    system("raspistill -t 1 -w 1000 -h 1000 -o pictures/#{folder_timestamp}/#{count}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
-    puts "Picture #{count} captured"
+    system("raspistill -t 1 -w 1000 -h 1000 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
+    puts "Picture #{i} captured"
     white_led.off
-    # i = i + 1
+    i = i + 1
   end
 
   def loading(state)
@@ -55,19 +55,19 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   Dir.chdir("./pictures/#{folder_timestamp}") # Moves into the folder created at the beginning
   il = ImageList.new(*Dir["*.jpg"]) # Grabs all the pictures taken by the photobooth
   # Loops through images an places overlay on them
-  # i = 0
-  il.each do |image, index|
+  i = 0
+  il.each do |image|
     result = image.composite(overlay, Magick::CenterGravity, Magick::OverCompositeOp) # Overlays center is on center of picture
-    result.write("composite#{index}.jpg")
-    # i = i + 1
+    result.write("composite#{i}.jpg")
+    i = i + 1
   end
 
   puts "Processing Strip"
-  # i = 0
-  il.each do |image, index|
+  i = 0
+  il.each do |image|
     result = image.border(0, 5, "white")
-    result.write("border#{index}.jpg")
-    # i = i + 1
+    result.write("border#{i}.jpg")
+    i = i + 1
   end
   il = ImageList.new(*Dir["border*.jpg"])
   il += footer
