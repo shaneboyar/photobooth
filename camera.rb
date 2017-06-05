@@ -65,7 +65,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   puts "Processing Strip"
   i = 0
   il.each do |image|
-    result = image.border(0, 5, "white")
+    result = image.border(2.5, 5, "white")
     result.write("border#{i}.jpg")
     i = i + 1
   end
