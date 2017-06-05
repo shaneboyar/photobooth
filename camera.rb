@@ -74,7 +74,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   result = il.append(true)
   result.write("strip1.jpg")
   result.write("strip2.jpg")
-  print_il = Image.new("strip1.jpg", "strip2.jpg")
+  print_il = ImageList.new("strip1.jpg", "strip2.jpg")
   print_strip = print_il.append(false)
   print_strip.write("print_strip.jpg")
 
