@@ -77,6 +77,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   print_il = ImageList.new("strip1.jpg", "strip2.jpg")
   print_strip = print_il.append(false)
   print_strip.write("print_strip.jpg")
+  system("lpr print_strip.jpg")
 
   def process_gif(delay = 50, output_file_name = "animated.gif")
     puts "Processing Gif"
