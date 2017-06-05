@@ -18,7 +18,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
 
   # Takes 4 pictures
   i = 1
-  4.times do
+  3.times do
     puts "Taking picture"
     sleep 1
     timer.display_three
@@ -37,7 +37,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
     timer.clear
     sleep 1
     white_led.on
-    system("raspistill -t 1 -w 1000 -h 1000 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
+    system("raspistill -t 1 -w 591 -h 500 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
     white_led.off
     i = i + 1
@@ -72,7 +72,11 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   il = ImageList.new(*Dir["border*.jpg"])
   il += footer
   result = il.append(true)
-  result.write("strip.jpg")
+  result.write("strip1.jpg")
+  result.write("strip2.jpg")
+  print_il = Image.new("strip1.jpg", "strip2.jpg")
+  print_strip = print_il.append(false)
+  print_strip.write("print_strip.jpg")
 
   def process_gif(delay = 50, output_file_name = "animated.gif")
     puts "Processing Gif"
@@ -96,7 +100,7 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   File.delete('border2.jpg')
   File.delete('border3.jpg')
   File.delete('animated.gif')
-  #File.delete('strip.jpg') This is just being commented for now while I work on strip design.
+  File.delete('strip1.jpg')
 
   Dir.chdir("../../") # Moves back into root folder
 
