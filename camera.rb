@@ -94,13 +94,12 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   File.delete('composite0.jpg')
   File.delete('composite1.jpg')
   File.delete('composite2.jpg')
-  File.delete('composite3.jpg')
   File.delete('border0.jpg')
   File.delete('border1.jpg')
   File.delete('border2.jpg')
-  File.delete('border3.jpg')
   File.delete('animated.gif')
   File.delete('strip1.jpg')
+  File.delete('strip2.jpg')
 
   Dir.chdir("../../") # Moves back into root folder
 
