@@ -3,14 +3,20 @@ require 'rmagick'
 include Magick
 require 'pi_piper'
 include PiPiper
-require './timer'
+# require './timer'
 
-white_led = PiPiper::Pin.new(:pin => 18, :direction => :out)
-timer = Timer.new
+ready_led = PiPiper::Pin.new(:pin => 21, :direction => :out)
+flash = PiPiper::Pin.new(:pin => 18, :direction => :out)
+three_counter_led = PiPiper::Pin.new(:pin => 20, :direction => :out)
+two_counter_led = PiPiper::Pin.new(:pin => 26, :direction => :out)
+one_counter_led = PiPiper::Pin.new(:pin => 16, :direction => :out)
+smile_counter_led = PiPiper::Pin.new(:pin => 19, :direction => :out)
 
+ready_led.on
 puts "Ready!"
 
 PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
+  ready_led.off
   footer = ImageList.new('footer.jpg')
   puts "Creating folder"
   folder_timestamp = Time.now.to_i
@@ -21,25 +27,25 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   3.times do
     puts "Taking picture"
     sleep 1
-    timer.display_three
     puts "3..."
+    three_counter_led.on
     sleep 1
-    timer.clear
-    sleep 1
-    timer.display_two
+    three_counter_led.off
     puts "2..."
+    two_counter_led.on
     sleep 1
-    timer.clear
-    sleep 1
-    timer.display_one
+    two_counter_led.off
     puts "1..."
+    one_counter_led.on
     sleep 1
-    timer.clear
-    sleep 1
-    white_led.on
+    one_counter_led.off
+    puts "Smile!"
+    smile_counter_led.on
+    flash.on
     system("raspistill -t 1 -w 591 -h 500 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
-    white_led.off
+    smile_counter_led.off
+    flash.off
     i = i + 1
   end
 
@@ -91,20 +97,21 @@ PiPiper.watch :pin => 25, :pull => :up do # Watches for button press into pin 25
   puts "Uploading Gif"
 
   RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new('animated.gif'))
-  puts "\nCleaning Up"
-  File.delete('composite0.jpg')
-  File.delete('composite1.jpg')
-  File.delete('composite2.jpg')
-  File.delete('border0.jpg')
-  File.delete('border1.jpg')
-  File.delete('border2.jpg')
-  File.delete('animated.gif')
-  File.delete('strip1.jpg')
-  File.delete('strip2.jpg')
+  puts "Cleaning Up"
+  # File.delete('composite0.jpg')
+  # File.delete('composite1.jpg')
+  # File.delete('composite2.jpg')
+  # File.delete('border0.jpg')
+  # File.delete('border1.jpg')
+  # File.delete('border2.jpg')
+  # File.delete('animated.gif')
+  # File.delete('strip1.jpg')
+  # File.delete('strip2.jpg')
 
   Dir.chdir("../../") # Moves back into root folder
 
-  puts "All done!"
+  puts "All done!\n"
   puts "Ready!"
+  ready_led.on
 end
 PiPiper.wait
