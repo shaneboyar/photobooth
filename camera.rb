@@ -1,24 +1,18 @@
 require 'rest-client'
-require 'rmagick'
-include Magick
+require 'mini_magick'
+include MiniMagick
 require 'pi_piper'
 include PiPiper
 require 'serialport'
 # require './timer'
 
-ser = SerialPort.new('/dev/ttyUSB0', 9600)
-# ready_led = PiPiper::Pin.new(:pin => 21, :direction => :out)
-# three_counter_led = PiPiper::Pin.new(:pin => 20, :direction => :out)
-# two_counter_led = PiPiper::Pin.new(:pin => 26, :direction => :out)
-# one_counter_led = PiPiper::Pin.new(:pin => 16, :direction => :out)
-# smile_counter_led = PiPiper::Pin.new(:pin => 19, :direction => :out)
 
-# ready_led.on
 puts "Ready!"
 
-PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
+def run
+  ser = SerialPort.new('/dev/ttyUSB0', 9600)
   ser.write('k') # All on Red
-  footer = ImageList.new('footer.jpg')
+  footer = MiniMagick::Image.open('footer.jpg')
   puts "Creating folder"
   folder_timestamp = Time.now.to_i
   system("mkdir pictures/#{folder_timestamp}") # Creates desitnation folder for photobooth sessions
@@ -37,7 +31,7 @@ PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
     sleep 1
     puts "Smile!"
     ser.write("k") # Flash for half a second
-    system("raspistill -t 1 -w 591 -h 500 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
+    system("raspistill -t 1 -w 591 -h 500 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128 -ISO 800 -t 500") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
     ser.write("k") # All on Red / Cascade Red on last cycle
     i = i + 1
@@ -50,23 +44,37 @@ PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
     end
   end
   puts "Overlaying Images"
-  overlay = Magick::Image.read("overlay.png")[0] # Grabs transparent overlay image from project folder
+  overlay = MiniMagick::Image.open("overlay.png")[0] # Grabs transparent overlay image from project folder
   Dir.chdir("./pictures/#{folder_timestamp}") # Moves into the folder created at the beginning
-  il = ImageList.new(*Dir["*.jpg"]) # Grabs all the pictures taken by the photobooth
+  il = []
+  # Grabs all the pictures taken by the photobooth
+  il << MiniMagick::Image.open("1.jpg")
+  il << MiniMagick::Image.open("2.jpg")
+  il << MiniMagick::Image.open("3.jpg")
   # Loops through images an places overlay on them
   i = 0
   il.each do |image|
-    result = image.composite(overlay, Magick::CenterGravity, Magick::OverCompositeOp) # Overlays center is on center of picture
+    # Overlays center is on center of picture
+    result = image.composite(overlay) do |c|
+      c.compose "Over"
+      c.geometry "+0+0"
+    end
     result.write("composite#{i}.jpg")
     i = i + 1
   end
 
   puts "Processing Strip"
+  # a = MiniMagick::Image.open("1.jpg")
+  # MiniMagick::Tool::Montage.new do |montage|
+  # montage << a.path
+  # montage << "output.jpg"
+  # end
   i = 0
   il.each do |image|
     result = image.border(2.5, 5, "white")
     result.write("border#{i}.jpg")
     i = i + 1
+    result.destroy!
   end
   il = ImageList.new(*Dir["border*.jpg"])
   il += footer
@@ -74,15 +82,16 @@ PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
   result.write("strip1.jpg")
   result.write("strip2.jpg")
   print_il = ImageList.new("strip1.jpg", "strip2.jpg")
-  print_strip = print_il.append(false)
+  print_strip = print_il.append(false) 
   print_strip.write("print_strip.jpg")
-  # system("lp print_strip.jpg")
+  #  system("lp print_strip.jpg")
 
   def process_gif(delay = 50, output_file_name = "animated.gif")
     puts "Processing Gif"
     animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
     animation.delay = delay
     animation.write("animated.gif")
+    animation.destroy!
   end
 
   process_gif
@@ -91,6 +100,12 @@ PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
 
   RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new('animated.gif'))
   puts "Cleaning Up"
+  il.destroy!
+  overlay.destroy!
+  footer.destroy!
+  result.destroy!
+  print_il.destroy!
+  print_strip.destroy!
   File.delete('composite0.jpg')
   File.delete('composite1.jpg')
   File.delete('composite2.jpg')
@@ -106,5 +121,9 @@ PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
   puts "All done!\n"
   ser.write("k")
   puts "Ready!"
+end
+
+PiPiper.watch :pin => 21, :pull => :up do # Watches for button press into pin 25
+  run
 end
 PiPiper.wait
