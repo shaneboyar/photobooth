@@ -12,7 +12,6 @@ puts "Ready!"
 def run
   ser = SerialPort.new('/dev/ttyUSB0', 9600)
   ser.write('k') # All on Red
-  footer = MiniMagick::Image.open('footer.jpg')
   puts "Creating folder"
   folder_timestamp = Time.now.to_i
   system("mkdir pictures/#{folder_timestamp}") # Creates desitnation folder for photobooth sessions
@@ -44,54 +43,54 @@ def run
     end
   end
   puts "Overlaying Images"
-  overlay = MiniMagick::Image.open("overlay.png")[0] # Grabs transparent overlay image from project folder
-  Dir.chdir("./pictures/#{folder_timestamp}") # Moves into the folder created at the beginning
+  overlay = MiniMagick::Image.open("overlay.png") # Grabs transparent overlay image from project folder
   il = []
   # Grabs all the pictures taken by the photobooth
-  il << MiniMagick::Image.open("1.jpg")
-  il << MiniMagick::Image.open("2.jpg")
-  il << MiniMagick::Image.open("3.jpg")
+  il << MiniMagick::Image.open("./pictures/#{folder_timestamp}/1.jpg")
+  il << MiniMagick::Image.open("./pictures/#{folder_timestamp}/2.jpg")
+  il << MiniMagick::Image.open("./pictures/#{folder_timestamp}/3.jpg")
   # Loops through images an places overlay on them
-  i = 0
+  i = 1
   il.each do |image|
     # Overlays center is on center of picture
     result = image.composite(overlay) do |c|
       c.compose "Over"
       c.geometry "+0+0"
     end
-    result.write("composite#{i}.jpg")
+    result.write("./pictures/#{folder_timestamp}/composite#{i}.jpg")
     i = i + 1
   end
 
   puts "Processing Strip"
-  # a = MiniMagick::Image.open("1.jpg")
-  # MiniMagick::Tool::Montage.new do |montage|
-  # montage << a.path
-  # montage << "output.jpg"
-  # end
-  i = 0
-  il.each do |image|
-    result = image.border(2.5, 5, "white")
-    result.write("border#{i}.jpg")
-    i = i + 1
-    result.destroy!
+  footer = MiniMagick::Image.open('footer.jpg')
+  MiniMagick::Tool::Montage.new do |montage|
+    il.each do |image|
+      montage << image.path
+    end
+    montage << footer.path
+    montage << "-geometry"
+    montage << "+5+5"
+    montage << "-tile"
+    montage << "1x4"
+    montage << "./pictures/#{folder_timestamp}/strip1.jpg"
   end
-  il = ImageList.new(*Dir["border*.jpg"])
-  il += footer
-  result = il.append(true)
-  result.write("strip1.jpg")
-  result.write("strip2.jpg")
-  print_il = ImageList.new("strip1.jpg", "strip2.jpg")
-  print_strip = print_il.append(false) 
-  print_strip.write("print_strip.jpg")
+  FileUtils.cp("./pictures/#{folder_timestamp}/strip1.jpg", "./pictures/#{folder_timestamp}/strip2.jpg")
+  MiniMagick::Tool::Montage.new do |montage|
+    montage << MiniMagick::Image.open("./pictures/#{folder_timestamp}/strip1.jpg").path
+    montage << MiniMagick::Image.open("./pictures/#{folder_timestamp}/strip2.jpg").path
+    montage << "-geometry"
+    montage << "+5+5"
+    montage << "./pictures/#{folder_timestamp}/print_strip.jpg"
+  end
   #  system("lp print_strip.jpg")
 
   def process_gif(delay = 50, output_file_name = "animated.gif")
     puts "Processing Gif"
-    animation = ImageList.new(*Dir["composite*.jpg"]) # Grabs all the new overlayed images
-    animation.delay = delay
-    animation.write("animated.gif")
-    animation.destroy!
+    gif_frames = []
+    gif_frames << MiniMagick::Image.open("./pictures/#{folder_timestamp}/composite1.jpg")
+    gif_frames << MiniMagick::Image.open("./pictures/#{folder_timestamp}/composite2.jpg")
+    gif_frames << MiniMagick::Image.open("./pictures/#{folder_timestamp}/composite3.jpg")
+    system("convert -delay 50 ./pictures/2/composite* -loop 0 ./pictures/#{folder_timestamp}/animated.gif")
   end
 
   process_gif
@@ -100,12 +99,6 @@ def run
 
   RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new('animated.gif'))
   puts "Cleaning Up"
-  il.destroy!
-  overlay.destroy!
-  footer.destroy!
-  result.destroy!
-  print_il.destroy!
-  print_strip.destroy!
   File.delete('composite0.jpg')
   File.delete('composite1.jpg')
   File.delete('composite2.jpg')
