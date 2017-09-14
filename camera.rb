@@ -4,19 +4,23 @@ include MiniMagick
 require 'pi_piper'
 include PiPiper
 require 'serialport'
-# require './timer'
 
 
 puts "Ready!"
 
+def next_arduino_step(serialport)
+  serialport.write("k")
+end
+
+
 def run
   ser = SerialPort.new('/dev/ttyUSB0', 9600)
-  ser.write('k') # All on Red
+  next_arduino_step(ser) # All on Red
   puts "Creating folder"
   folder_timestamp = Time.now.to_i
   system("mkdir pictures/#{folder_timestamp}") # Creates desitnation folder for photobooth sessions
 
-  # Takes 4 pictures
+  # Takes 3 pictures
   i = 1
   3.times do
     puts "Taking picture"
@@ -33,15 +37,9 @@ def run
     system("raspistill -t 1 -w 591 -h 500 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128 -ISO 800 -t 500") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
     ser.write("k") # All on Red / Cascade Red on last cycle
-    i = i + 1
+    i += 1
   end
 
-  def loading(state)
-    while true
-      print "."
-      sleep(0.5)
-    end
-  end
   puts "Overlaying Images"
   overlay = MiniMagick::Image.open("overlay.png") # Grabs transparent overlay image from project folder
   il = []
@@ -58,7 +56,7 @@ def run
       c.geometry "+0+0"
     end
     result.write("./pictures/#{folder_timestamp}/composite#{i}.jpg")
-    i = i + 1
+    i += 1
   end
 
   puts "Processing Strip"
@@ -84,20 +82,14 @@ def run
   end
   #  system("lp print_strip.jpg")
 
-  def process_gif(delay = 50, output_file_name = "animated.gif")
-    puts "Processing Gif"
-    gif_frames = []
-    gif_frames << MiniMagick::Image.open("./pictures/#{folder_timestamp}/composite1.jpg")
-    gif_frames << MiniMagick::Image.open("./pictures/#{folder_timestamp}/composite2.jpg")
-    gif_frames << MiniMagick::Image.open("./pictures/#{folder_timestamp}/composite3.jpg")
-    system("convert -delay 50 ./pictures/2/composite* -loop 0 ./pictures/#{folder_timestamp}/animated.gif")
-  end
+  puts "Processing Gif"
+  system("convert -delay 50 ./pictures/#{folder_timestamp}/composite* -loop 0 ./pictures/#{folder_timestamp}/animated.gif")
 
-  process_gif
 
   puts "Uploading Gif"
 
-  RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new('animated.gif'))
+  RestClient.post('http://www.shaneandstephanie.com/photobooth', file: File.new("./pictures/#{folder_timestamp}/animated.gif"))
+
   puts "Cleaning Up"
   File.delete('composite0.jpg')
   File.delete('composite1.jpg')
@@ -108,8 +100,6 @@ def run
   File.delete('animated.gif')
   File.delete('strip1.jpg')
   File.delete('strip2.jpg')
-
-  Dir.chdir("../../") # Moves back into root folder
 
   puts "All done!\n"
   ser.write("k")
