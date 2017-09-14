@@ -37,6 +37,7 @@ def run
     system("raspistill -t 1 -w 591 -h 500 -o pictures/#{folder_timestamp}/#{i}.jpg -cfx 128:128 -ISO 800 -t 500") # Takes picture in 1 second, scales to 1000x1000, flips vertically, sets to grayscsale
     puts "Picture #{i} captured"
     ser.write("k") # All on Red / Cascade Red on last cycle
+    sleep 1
     i += 1
   end
 
