@@ -4,7 +4,7 @@ apt-get install rubygems bundler libssl-dev imagemagick libmagickwand-dev
 
 bundle install
 
-ssh into Raspi
+ssh into Raspi (using https://github.com/thoqbk/pi-oi to find IP)
 
 stty -F /dev/ttyUSB0 -hupcl
 
