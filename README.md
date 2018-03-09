@@ -1,3 +1,5 @@
+### This is built to run on a Raspbery Pi using the integrated camera module
+
 apt-get update && apt-get upgrade
 
 apt-get install rubygems bundler libssl-dev imagemagick libmagickwand-dev
